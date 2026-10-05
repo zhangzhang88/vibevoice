@@ -96,11 +96,13 @@ models/VibeVoice-1.5B
 ```text
 demo/voices/haoqin-25.mp3
 demo/voices/zh-Haoqin_man.wav
-demo/voices/zh-Haoqin_fast13_man.wav
 demo/voices/老贺10秒.mp3
 demo/voices/zh-Laohe_man.wav
+demo/voices/hua.m4a
+demo/voices/zh-Hua.wav
 demo/voices/1.jpg
 demo/voices/2.jpg
+demo/voices/3.jpg
 ```
 
 生产别名：
@@ -108,9 +110,12 @@ demo/voices/2.jpg
 ```text
 Haoqin -> zh-Haoqin_man.wav
 Laohe  -> zh-Laohe_man.wav
+Hua    -> zh-Hua.wav
 ```
 
-`zh-Haoqin_fast13_man.wav` 是 1.3x 加速实验，用户认为声音失真，禁止用于正式生成。
+Haoqin 的 1.3x 加速实验已经因声音失真被用户否定并删除。除非用户明确要求重新实验，否则不要重新生成。
+
+新增 `Hua` 声音：原始 `hua.m4a` 为约 13.38 秒、48kHz 立体声 AAC；已转换为 `zh-Hua.wav`（24kHz、单声道、PCM s16le），并使用 `seed 42` 完成 6.67 秒中文短句测试，生成成功。Hua 的头像为 `demo/voices/3.jpg`。
 
 当前嘉宾：
 
@@ -217,19 +222,16 @@ outputs/podcast-gelameisi-flooring-full-repaired-v2.wav
 
 ## 10. 当前竖屏视频
 
-背景图：
+当前用户确认通过的 **clean 模板参考基准**：
 
 ```text
-outputs/podcast-video-background-gelameisi-vertical-clean-1080x1920.png
+outputs/podcast-video-background-husband-wife-vertical-clean-v2-1080x1920.png
+outputs/podcast-husband-wife-video-channel-vertical-clean-v2.mp4
 ```
 
-当前最新正式视频：
+注意：这些文件属于 `outputs/`，只作为本机参考，不提交 Git。
 
-```text
-outputs/podcast-gelameisi-video-channel-vertical-waveform-white-v2.mp4
-```
-
-参数：
+固定参数：
 
 - 1080×1920
 - 9:16
@@ -240,17 +242,46 @@ outputs/podcast-gelameisi-video-channel-vertical-waveform-white-v2.mp4
 - 波形带轻微发光
 - 下方保留大面积字幕区
 
-最终视觉要求：
+默认 clean 结构：
 
-- 顶部保留 `AI 播客 · 行业对谈`
-- 保留主标题和访谈副标题
-- 保留两个头像、姓名、身份
-- 头像中间不要分割线和圆点
-- 不显示“实时音频波形”
-- 不显示字幕黑框
-- 不显示“字幕安全区已预留”
-- 底部保持干净
-- 波形必须是明显的亮白色
+1. 顶部小标签
+2. 主标题
+3. 副标题
+4. 两个圆形头像 + 角色/身份标签
+5. 动态波形
+6. 下方大块干净字幕区
+
+默认禁止：
+
+- 左右竖线
+- 头像下面的横线
+- 人物之间的分割线、圆点
+- 引语、额外说明文字
+- 字幕占位框
+- “实时音频波形”
+- “字幕安全区已预留”
+- 其它让版面产生边框/框架感的装饰
+
+公开画面只展示当前视频需要的角色/身份名称。内部声音别名（例如 `Haoqin`、`Hua`）只用于本地推理映射，不应该出现在发布画面中。
+
+### 10.1 这次踩坑与防复发规则
+
+曾经出现过两类错误：
+
+1. 误把旧模板的竖线、横线、引语等重新带回，破坏 clean 结构。
+2. FFmpeg 合成时把背景流错误地再次送入 overlay，导致标题、头像、文案在画面下半部又重复出现一套。
+
+以后视频渲染必须遵守：
+
+- 背景图只作为一次底图参与合成。
+- waveform 需要 glow 时，先对 waveform `split`；一路做 `gblur` glow，一路保留白色 core，然后两路依次 overlay 到同一个背景上。
+- 禁止重复 overlay 整个背景流。
+- 不要直接渲染完整视频。先生成 3–8 秒 preview。
+- preview 必须抽帧检查：只有一套标题/头像；动态波形可见；波形位置正确；字幕区没有重复图形；公开画面没有内部声音别名；分辨率为 1080×1920。
+- preview 通过后再渲染完整视频。
+- 完整视频完成后再次抽帧，并检查时长、编码、分辨率和音频流。
+
+这套 preview → 抽帧验收 → 完整渲染 → 最终抽帧验收，是固定生产流程，不能省略。
 
 ## 11. 视频渲染
 

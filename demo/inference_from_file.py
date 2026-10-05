@@ -264,13 +264,9 @@ def main():
     voice_samples = []
     actual_speakers = []
     
-    # Get unique speaker numbers in order of first appearance
-    unique_speaker_numbers = []
-    seen = set()
-    for speaker_num in speaker_numbers:
-        if speaker_num not in seen:
-            unique_speaker_numbers.append(speaker_num)
-            seen.add(speaker_num)
+    # Voice prompts are positional: index 0 -> Speaker 1, index 1 -> Speaker 2, etc.
+    # Keep samples in numeric speaker order, regardless of which speaker talks first.
+    unique_speaker_numbers = sorted(set(speaker_numbers), key=int)
     
     for speaker_num in unique_speaker_numbers:
         speaker_name = speaker_name_mapping.get(speaker_num, f"Speaker {speaker_num}")
