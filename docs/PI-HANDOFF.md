@@ -1,203 +1,322 @@
-# Pi Agent Handoff — VibeVoice
+# Pi Agent 接管文档 — VibeVoice
 
-Updated: 2026-10-05
+更新时间：2026-10-05
 
-## Project
+## 1. 项目定位
 
-Local path:
-    /Users/world/Downloads/code/vibevoice
+本地路径：
 
-Purpose:
-- Keep the community VibeVoice code usable locally.
-- Validate VibeVoice as a long-form multi-speaker podcast engine.
-- Keep local-cosyvoice for single-narrator/personal-voice work.
-- Prefer generate-on-demand; no permanent API daemon.
+```text
+/Users/world/Downloads/code/vibevoice
+```
 
-Community base when this work started:
-    952326ddb264062466a888cf32a5b2f4e803e16e
-    Add info about transformers compatible checkpoints. (#67)
+这个项目最开始来自社区维护版 VibeVoice，现在同时作为用户本地的 AI 播客 / 多人对话语音生成工作区。
 
-Desired Git remotes:
-    origin   https://github.com/zhangzhang88/vibevoice.git
-    upstream https://github.com/vibevoice-community/VibeVoice.git
+当前定位：
 
-## Verified machine/runtime
+- `local-cosyvoice`：更适合单人旁白、个人声音。
+- VibeVoice：主要用于长文本、多人播客、访谈式音频。
+
+不要修改 `local-cosyvoice` 和 `my-voice-tts`。
+
+用户偏好简单、按需生成，不希望常驻后台 API 服务。
+
+## 2. Git / 上游状态
+
+当前个人仓库：
+
+```text
+https://github.com/zhangzhang88/vibevoice
+```
+
+社区上游：
+
+```text
+https://github.com/vibevoice-community/VibeVoice.git
+```
+
+当前 remote 结构：
+
+```text
+origin   https://github.com/zhangzhang88/vibevoice.git
+upstream https://github.com/vibevoice-community/VibeVoice.git
+```
+
+本次本地工作开始时对应的社区 commit：
+
+```text
+952326ddb264062466a888cf32a5b2f4e803e16e
+Add info about transformers compatible checkpoints. (#67)
+```
+
+个人仓库是公开仓库，因此声音样本、头像、模型、生成音频和视频都不能上传。
+
+## 3. 已验证机器与运行环境
+
+机器：
 
 - Mac mini M4
-- 16 GB unified memory
-- macOS 27.0.1 build 26A434
+- 16GB 统一内存
+- Apple Silicon
+- macOS 27.0.1（build 26A434）
+
+本地环境：
+
 - Python 3.11.17
-- project Python: .venv/bin/python
-- local uv: .tools/uv-aarch64-apple-darwin/uv
-- MPS available
-- model inference: MPS + FP16 + SDPA
-- no system ffmpeg
-- imageio-ffmpeg 0.6.0 installed in .venv
+- `.venv/bin/python`
+- 本地 uv：`.tools/uv-aarch64-apple-darwin/uv`
+- MPS 可用
+- 推理：MPS + FP16 + SDPA
+- 系统没有 ffmpeg
+- `.venv` 已安装 `imageio-ffmpeg==0.6.0`
 
-Local model:
-    models/VibeVoice-1.5B
-Approximate size:
-    5.0 GB
+注意：
 
-The 1.5B model is a practical fit for this 16 GB M4 machine.
+- 当前 `.venv` 里没有 `python -m pip`。
+- 如需安装包，可使用本地 uv。
 
-## Local voices
+## 4. 模型
 
-Local-only files include:
-    demo/voices/haoqin-25.mp3
-    demo/voices/zh-Haoqin_man.wav
-    demo/voices/zh-Haoqin_fast13_man.wav
-    demo/voices/老贺10秒.mp3
-    demo/voices/zh-Laohe_man.wav
-    demo/voices/1.jpg
-    demo/voices/2.jpg
+本地模型：
 
-Production aliases:
-    Haoqin -> zh-Haoqin_man.wav
-    Laohe  -> zh-Laohe_man.wav
+```text
+models/VibeVoice-1.5B
+```
 
-Do not use zh-Haoqin_fast13_man.wav in production. The user rejected the 1.3x time-stretched voice because it sounded distorted.
+体积约 5.0GB，只保存在本机，已加入 `.gitignore`。
 
-Guest in the current episode:
-- 贺伟文
-- 东莞格拉美司董事长
+对当前 M4 16GB 来说，1.5B 是比较合适的版本。已经验证 MPS、FP16、长文本、多说话人、零样本声音克隆和中文播客生成。
 
-## Canonical generation
+中文生成偶尔会不稳定，标点和分段很重要。如果需要明显停顿，可以把同一个 Speaker 拆成两段连续输入。
 
-    .venv/bin/python demo/inference_from_file.py \
-      --model_path models/VibeVoice-1.5B \
-      --txt_path <script.txt> \
-      --speaker_names Haoqin Laohe \
-      --output_dir outputs \
-      --device mps \
-      --seed 42
+## 5. 本地声音文件
 
-The first full episode took about 17m35s to generate roughly 9m38s of audio, so do not regenerate the whole episode for a single bad line.
+只保留在本机：
 
-## Current episode
+```text
+demo/voices/haoqin-25.mp3
+demo/voices/zh-Haoqin_man.wav
+demo/voices/zh-Haoqin_fast13_man.wav
+demo/voices/老贺10秒.mp3
+demo/voices/zh-Laohe_man.wav
+demo/voices/1.jpg
+demo/voices/2.jpg
+```
 
-Topic:
-    地坪漆这个行业，现在到底还好不好做？
+生产别名：
 
-Local script:
-    tests/podcast-gelameisi-flooring-full.txt
+```text
+Haoqin -> zh-Haoqin_man.wav
+Laohe  -> zh-Laohe_man.wav
+```
 
-Important edits already made:
-1. Opening changed from 地坪漆 to 环氧地坪漆 with a deliberate pause before the term.
-2. Guest introduction changed to:
-   今天请到的嘉宾，是东莞格拉美司的董事长贺总。
+`zh-Haoqin_fast13_man.wav` 是 1.3x 加速实验，用户认为声音失真，禁止用于正式生成。
 
-## Latest audio
+当前嘉宾：
 
-Original:
-    outputs/podcast-gelameisi-flooring-full_generated.wav
+```text
+姓名：贺伟文
+身份：东莞格拉美司董事长
+```
 
-Repair v1:
-    outputs/podcast-gelameisi-flooring-full-repaired-v1.wav
+## 6. 标准生成命令
 
-Current canonical audio:
-    outputs/podcast-gelameisi-flooring-full-repaired-v2.wav
+```bash
+.venv/bin/python demo/inference_from_file.py \
+  --model_path models/VibeVoice-1.5B \
+  --txt_path <script.txt> \
+  --speaker_names Haoqin Laohe \
+  --output_dir outputs \
+  --device mps \
+  --seed 42
+```
 
-Current duration:
-    581.34 seconds, about 9:41
+当前完整播客第一次生成耗时约 17 分 35 秒，音频约 9 分 38 秒，RTF 约 1.83x。因此一句话有问题时，禁止整篇重生。
 
-Repair 1 input:
-    tests/repair-opening-epoxy-flooring.txt
-Repair 1 output:
-    outputs/repair-opening-epoxy-flooring_generated.wav
-Result:
-    about 0.64 s pause before 环氧地坪漆
+## 7. 当前播客
 
-Repair 2 input:
-    tests/repair-guest-title-he-zong.txt
-Repair 2 output:
-    outputs/repair-guest-title-he-zong_generated.wav
-Result:
-    董事长 -> 董事长贺总
+主题：
 
-## Local repair rule
+```text
+地坪漆这个行业，现在到底还好不好做？
+```
 
-Always start from the latest repaired full WAV.
+形式：
 
-For one bad sentence:
-1. Find low-energy gaps around the reported timestamp.
-2. Cut only on silence.
-3. Generate only that sentence, or a small context window if needed.
-4. Use the same voice alias and seed 42.
-5. Splice with soundfile/NumPy.
-6. Save as repaired-v3, repaired-v4, etc.
-7. Keep all prior known-good versions.
-8. Rebuild the latest video from the newest WAV.
+- 主持人：Haoqin
+- 嘉宾：贺伟文
+- 身份：东莞格拉美司董事长
 
-For a pause-only problem, inserting silence directly may be preferable.
+本地完整脚本：
 
-## Current vertical video
+```text
+tests/podcast-gelameisi-flooring-full.txt
+```
 
-Background:
-    outputs/podcast-video-background-gelameisi-vertical-clean-1080x1920.png
+已经完成的两处重要修正：
 
-Current canonical video:
-    outputs/podcast-gelameisi-video-channel-vertical-waveform-white-v2.mp4
+1. 开场从“地坪漆”改成“环氧地坪漆”，并在前面加入明显停顿。
+2. 嘉宾介绍改成“今天请到的嘉宾，是东莞格拉美司的董事长贺总。”
 
-Format:
-- 1080x1920, 9:16
-- H.264
-- AAC mono
+## 8. 当前音频文件
+
+原始完整版：
+
+```text
+outputs/podcast-gelameisi-flooring-full_generated.wav
+```
+
+第一次修复版：
+
+```text
+outputs/podcast-gelameisi-flooring-full-repaired-v1.wav
+```
+
+当前最新正式音频：
+
+```text
+outputs/podcast-gelameisi-flooring-full-repaired-v2.wav
+```
+
+当前时长：581.34 秒，约 9 分 41 秒。
+
+修复 1：
+
+```text
+输入：tests/repair-opening-epoxy-flooring.txt
+输出：outputs/repair-opening-epoxy-flooring_generated.wav
+结果：在“环氧地坪漆”前形成约 0.64 秒停顿
+```
+
+修复 2：
+
+```text
+输入：tests/repair-guest-title-he-zong.txt
+输出：outputs/repair-guest-title-he-zong_generated.wav
+结果：“董事长”改为“董事长贺总”
+```
+
+## 9. 局部修复原则
+
+以后如果用户指出某个时间点附近有问题，不要重生整篇。
+
+正确流程：
+
+1. 从**最新 repaired 完整 WAV** 开始。
+2. 检查目标时间点前后的低能量 / 静音区。
+3. 只在静音处切割，不能切到音节中间。
+4. 只写一个很小的修复脚本。
+5. 用同一个声音别名、同一个模型、同一个 `--seed 42` 重生。
+6. 检查新片段时长和停顿。
+7. 用 `soundfile + NumPy` 拼接。
+8. 保存为 `repaired-v3.wav`、`repaired-v4.wav` 等新版本。
+9. 不覆盖旧版。
+10. 基于最新 WAV 重建视频。
+
+如果只是停顿问题，优先直接插入静音。
+
+## 10. 当前竖屏视频
+
+背景图：
+
+```text
+outputs/podcast-video-background-gelameisi-vertical-clean-1080x1920.png
+```
+
+当前最新正式视频：
+
+```text
+outputs/podcast-gelameisi-video-channel-vertical-waveform-white-v2.mp4
+```
+
+参数：
+
+- 1080×1920
+- 9:16
 - 30 fps
-- white waveform with slight glow
-- clean lower area reserved for subtitles
+- H.264
+- AAC 单声道
+- 白色动态波形
+- 波形带轻微发光
+- 下方保留大面积字幕区
 
-Visual decisions:
-- keep AI 播客 · 行业对谈 at top
-- keep title and interview subtitle
-- keep two avatars with names/roles
-- no center divider
-- no 实时音频波形 label
-- no subtitle placeholder black box
-- no 字幕安全区已预留 text
-- bottom remains visually clean for captions
+最终视觉要求：
 
-## Video rendering
+- 顶部保留 `AI 播客 · 行业对谈`
+- 保留主标题和访谈副标题
+- 保留两个头像、姓名、身份
+- 头像中间不要分割线和圆点
+- 不显示“实时音频波形”
+- 不显示字幕黑框
+- 不显示“字幕安全区已预留”
+- 底部保持干净
+- 波形必须是明显的亮白色
 
-No system ffmpeg is installed.
+## 11. 视频渲染
 
-Find bundled ffmpeg:
-    .venv/bin/python -c 'import imageio_ffmpeg; print(imageio_ffmpeg.get_ffmpeg_exe())'
+系统没有 ffmpeg。
 
-If imageio-ffmpeg is missing locally:
-    .tools/uv-aarch64-apple-darwin/uv pip install --python .venv/bin/python imageio-ffmpeg
+获取本地 ffmpeg：
 
-## Subtitles
+```bash
+.venv/bin/python -c 'import imageio_ffmpeg; print(imageio_ffmpeg.get_ffmpeg_exe())'
+```
 
-Existing old SRT:
-    outputs/podcast-gelameisi-flooring-full.srt
+如果 `imageio-ffmpeg` 缺失：
 
-Do not treat it as final. Later audio repairs changed timing.
+```bash
+.tools/uv-aarch64-apple-darwin/uv pip install --python .venv/bin/python imageio-ffmpeg
+```
 
-Correct sequence:
-1. finish all audio repairs
-2. lock final WAV
-3. generate/align final subtitles
-4. add subtitles in 剪映
+## 12. 字幕状态
 
-## Git/privacy boundary
+旧 SRT：
 
-Do not commit:
-- models/
-- outputs/
-- .tools/
-- .runtime/
-- .venv/
-- personal voice references
-- avatars
-- local podcast scripts under tests/*.txt
-- voice-preview.html
+```text
+outputs/podcast-gelameisi-flooring-full.srt
+```
 
-## Pi startup prompt
+这个字幕文件已经过期，因为后面两次音频局部修复改变了整体时间轴。
 
-The user can start Pi with:
+正确顺序：
 
+1. 先把所有音频问题修完
+2. 锁定最终 WAV
+3. 再生成 / 对齐最终字幕
+4. 最后在剪映加字幕
+
+## 13. Git / 隐私边界
+
+不能提交：
+
+- `models/`
+- `outputs/`
+- `.tools/`
+- `.runtime/`
+- `.venv/`
+- 个人声音参考
+- 头像
+- `tests/*.txt` 本地播客脚本
+- `voice-preview.html`
+
+每次提交前：
+
+```bash
+git status --short
+git diff --check
+```
+
+禁止随意 force push。
+
+## 14. Pi 接管提示词
+
+新开 Pi Agent 时直接说：
+
+```text
 请先读取 /Users/world/Downloads/code/vibevoice/AGENTS.md
 和 /Users/world/Downloads/code/vibevoice/docs/PI-HANDOFF.md，
 然后接管这个项目。先检查当前 Git 状态和本地最新音频/视频文件，
 不要重新生成完整播客，也不要修改 local-cosyvoice 或 my-voice-tts。
+```
+
+这样即可继续，不需要重新回忆之前整段聊天。

@@ -182,32 +182,37 @@ Note: Microsoft has removed the original repo and models. This fork is based off
 
 ---
 
-## Local fork notes: Mac M4 podcast workflow
+## 本地工作流说明：Mac M4 播客生成
 
-This personal fork is also used for a verified local VibeVoice workflow on a Mac mini M4 with 16 GB unified memory.
+这个个人 Fork 目前也作为本地 VibeVoice 播客工作区使用，已经在 **Mac mini M4 / 16GB 统一内存** 上完成实际验证。
 
-Verified locally on 2026-10-05:
-- VibeVoice 1.5B on Apple Silicon with MPS + FP16 + SDPA
-- zero-shot local voice cloning
-- two-speaker Chinese podcast generation
-- sentence-level regeneration and audio splicing
-- 1080x1920 Video Channels output with animated waveform
-- no always-on API/service required
+截至 2026-10-05，已经验证：
 
-Agent handoff documents:
-- AGENTS.md
-- docs/PI-HANDOFF.md
+- VibeVoice 1.5B 可在 Apple Silicon 上通过 MPS + FP16 + SDPA 运行
+- 支持本地零样本声音克隆
+- 支持双人中文播客 / 对话生成
+- 支持单句局部重生和音频拼接，不需要因为一句错误重跑整篇
+- 支持生成 1080×1920 的视频号竖屏视频
+- 支持动态白色音频波形
+- 不需要常驻 API 服务，按需生成即可
 
-Large/local-only data is intentionally not committed: model weights, local runtimes, voice references, avatars, generated WAV/MP4/PNG/SRT files, and local podcast scripts.
+Agent 接管时请先阅读：
 
-Local inference pattern:
+- `AGENTS.md`
+- `docs/PI-HANDOFF.md`
 
-    .venv/bin/python demo/inference_from_file.py \
-      --model_path models/VibeVoice-1.5B \
-      --txt_path path/to/script.txt \
-      --speaker_names Haoqin Laohe \
-      --output_dir outputs \
-      --device mps \
-      --seed 42
+本地大文件和隐私素材不会上传 GitHub，包括模型权重、本地运行环境、个人声音参考、头像、生成后的 WAV / MP4 / PNG / SRT，以及本地播客脚本。
 
-Read docs/PI-HANDOFF.md before changing the current local production workflow.
+本地标准推理命令：
+
+```bash
+.venv/bin/python demo/inference_from_file.py \
+  --model_path models/VibeVoice-1.5B \
+  --txt_path path/to/script.txt \
+  --speaker_names Haoqin Laohe \
+  --output_dir outputs \
+  --device mps \
+  --seed 42
+```
+
+继续本地生产工作前，先阅读 `docs/PI-HANDOFF.md`。
