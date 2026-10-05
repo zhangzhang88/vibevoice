@@ -176,3 +176,19 @@ tags
 exp
 .gradio/
 MSFT-VV
+
+# Local VibeVoice validation / podcast workspace
+/.tools/
+/.runtime/
+/models/
+/voice-preview.html
+/tests/*.txt
+
+# Personal/local voice references and avatars (do not publish)
+demo/voices/1.jpg
+demo/voices/2.jpg
+demo/voices/haoqin-25.mp3
+demo/voices/老贺10秒.mp3
+demo/voices/zh-Haoqin_man.wav
+demo/voices/zh-Haoqin_fast13_man.wav
+demo/voices/zh-Laohe_man.wav

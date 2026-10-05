@@ -179,3 +179,35 @@ In fact, we intentionally decided not to denoise our training data because we th
 The source code and models are licensed under the MIT License. See the [LICENSE](./LICENSE) file for details.
 
 Note: Microsoft has removed the original repo and models. This fork is based off of the MIT-licensed code from Microsoft.
+
+---
+
+## Local fork notes: Mac M4 podcast workflow
+
+This personal fork is also used for a verified local VibeVoice workflow on a Mac mini M4 with 16 GB unified memory.
+
+Verified locally on 2026-10-05:
+- VibeVoice 1.5B on Apple Silicon with MPS + FP16 + SDPA
+- zero-shot local voice cloning
+- two-speaker Chinese podcast generation
+- sentence-level regeneration and audio splicing
+- 1080x1920 Video Channels output with animated waveform
+- no always-on API/service required
+
+Agent handoff documents:
+- AGENTS.md
+- docs/PI-HANDOFF.md
+
+Large/local-only data is intentionally not committed: model weights, local runtimes, voice references, avatars, generated WAV/MP4/PNG/SRT files, and local podcast scripts.
+
+Local inference pattern:
+
+    .venv/bin/python demo/inference_from_file.py \
+      --model_path models/VibeVoice-1.5B \
+      --txt_path path/to/script.txt \
+      --speaker_names Haoqin Laohe \
+      --output_dir outputs \
+      --device mps \
+      --seed 42
+
+Read docs/PI-HANDOFF.md before changing the current local production workflow.
